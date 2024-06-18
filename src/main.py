@@ -31,10 +31,13 @@ def main():
     gols_segundo_tempo = dados_completos[dados_completos['minute'] > 45]['team'].value_counts(normalize=True)
 
     print(primeiro_gol_resultado)
+    print("_______________")
     print(f"Vitórias em casa: {vitoria_casa}")
     print(f"Vitórias fora: {vitoria_fora}")
+    print("_______________")
     print(f"Gols no primeiro tempo: {gols_primeiro_tempo}")
     print(f"Gols no segundo tempo: {gols_segundo_tempo}")
+    print("_______________")
 
 
 main()
