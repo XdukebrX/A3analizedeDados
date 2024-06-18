@@ -20,23 +20,43 @@ def main():
 
     primeiro_gol = dados_completos[
         dados_completos['minute'] == dados_completos.groupby('date')['minute'].transform('min')]
-    primeiro_gol_resultado = primeiro_gol.groupby('team')['resultado_jogo'].value_counts(normalize=True)
 
-    vitoria_casa = dados_completos[dados_completos['resultado_jogo'] == 'vitória_casa']['team'].value_counts(
-        normalize=True)
-    vitoria_fora = dados_completos[dados_completos['resultado_jogo'] == 'vitória_fora']['team'].value_counts(
-        normalize=True)
 
-    gols_primeiro_tempo = dados_completos[dados_completos['minute'] <= 45]['team'].value_counts(normalize=True)
-    gols_segundo_tempo = dados_completos[dados_completos['minute'] > 45]['team'].value_counts(normalize=True)
+    vitorias_primeiro_gol = primeiro_gol[primeiro_gol['resultado_jogo'].isin(['vitória_casa', 'vitória_fora'])]
 
-    print(primeiro_gol_resultado)
+
+    contagem_vitorias = vitorias_primeiro_gol['team'].value_counts()
+    print(f'Numero de vitorias que o time possui fazendo o primeiro gol da partida:')
+    print(contagem_vitorias)
+    print(f'---------------------------------------')
+
+
+    vitorias_home_team = dados_completos[(dados_completos['resultado_jogo'] == 'vitória_casa') & (
+            dados_completos['team'] == dados_completos['home_team'])]
+    porcentagem_vitorias_home_team = (len(vitorias_home_team) / len(
+        dados_completos[dados_completos['team'] == dados_completos['home_team']])) * 100
+
+
+    vitorias_away_team = dados_completos[(dados_completos['resultado_jogo'] == 'vitória_fora') & (
+            dados_completos['team'] == dados_completos['away_team'])]
+    porcentagem_vitorias_away_team = (len(vitorias_away_team) / len(
+        dados_completos[dados_completos['team'] == dados_completos['away_team']])) * 100
+    print(f"Porcentagem de vitórias do time da casa: {porcentagem_vitorias_home_team:.2f}%")
+    print(f"Porcentagem de vitórias do time visitante: {porcentagem_vitorias_away_team:.2f}%")
     print("_______________")
-    print(f"Vitórias em casa: {vitoria_casa}")
-    print(f"Vitórias fora: {vitoria_fora}")
-    print("_______________")
-    print(f"Gols no primeiro tempo: {gols_primeiro_tempo}")
-    print(f"Gols no segundo tempo: {gols_segundo_tempo}")
+
+    gols_primeiro_tempo = dados_gols[dados_gols['minute'] <= 45]
+    gols_segundo_tempo = dados_gols[dados_gols['minute'] > 45]
+
+    numero_gols_primeiro_tempo = len(gols_primeiro_tempo)
+    numero_gols_segundo_tempo = len(gols_segundo_tempo)
+
+    total_gols = numero_gols_primeiro_tempo + numero_gols_segundo_tempo
+    porcentagem_primeiro_tempo = (numero_gols_primeiro_tempo / total_gols) * 100
+    porcentagem_segundo_tempo = (numero_gols_segundo_tempo / total_gols) * 100
+
+    print(f"Porcentagem de gols no primeiro tempo: {porcentagem_primeiro_tempo:.2f}%")
+    print(f"Porcentagem de gols no segundo tempo: {porcentagem_segundo_tempo:.2f}%")
     print("_______________")
 
 
