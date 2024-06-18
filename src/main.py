@@ -1,24 +1,40 @@
-import os
+import numpy as np
+import pandas as pd
 
-from dotenv import load_dotenv, find_dotenv
-
-from src.domain.goalscorers import Author
-from src.utils.conection import connect_to_mysql
+FILE_PATH = '../data/goalscorers.csv'
 
 
 def main():
-    cnx = connect_to_mysql(attempts=3)
+    dados_gols = pd.read_csv('../data/goalscorers.csv')
+    dados_resultados = pd.read_csv('../data/results.csv')
 
-    if cnx and cnx.is_connected():
+    dados_completos = pd.merge(dados_gols, dados_resultados, on=['date', 'home_team', 'away_team'])
 
-        with cnx.cursor() as cursor:
+    condicoes = [
+        (dados_completos['home_score'] > dados_completos['away_score']),
+        (dados_completos['home_score'] < dados_completos['away_score']),
+        (dados_completos['home_score'] == dados_completos['away_score'])
+    ]
+    escolhas = ['vitória_casa', 'vitória_fora', 'empate']
+    dados_completos['resultado_jogo'] = np.select(condicoes, escolhas, default='indeterminado')
 
-            result = cursor.execute("SELECT * FROM author LIMIT 5")
+    primeiro_gol = dados_completos[
+        dados_completos['minute'] == dados_completos.groupby('date')['minute'].transform('min')]
+    primeiro_gol_resultado = primeiro_gol.groupby('team')['resultado_jogo'].value_counts(normalize=True)
 
-            rows = cursor.fetchall()
+    vitoria_casa = dados_completos[dados_completos['resultado_jogo'] == 'vitória_casa']['team'].value_counts(
+        normalize=True)
+    vitoria_fora = dados_completos[dados_completos['resultado_jogo'] == 'vitória_fora']['team'].value_counts(
+        normalize=True)
 
-            for rows in rows:
-                print(rows)
+    gols_primeiro_tempo = dados_completos[dados_completos['minute'] <= 45]['team'].value_counts(normalize=True)
+    gols_segundo_tempo = dados_completos[dados_completos['minute'] > 45]['team'].value_counts(normalize=True)
+
+    print(primeiro_gol_resultado)
+    print(f"Vitórias em casa: {vitoria_casa}")
+    print(f"Vitórias fora: {vitoria_fora}")
+    print(f"Gols no primeiro tempo: {gols_primeiro_tempo}")
+    print(f"Gols no segundo tempo: {gols_segundo_tempo}")
 
 
 main()
